@@ -1,6 +1,8 @@
 import {  Request, Response } from "express";
 import { QueryConfig } from "pg";
+import format from "pg-format";
 import { client } from "./database";
+import { IMovieUpdate } from "./interfaces";
 
 export const getMovies = async (req : Request , res : Response) => {
     const queryString = `SELECT * FROM movies;`
@@ -34,9 +36,32 @@ export const createMovie = async (req : Request , res : Response) => {
 
 
 export const deleteMovieFromId = async (req : Request , res : Response) => {
-    const queryString = `DELETE FROM movies WHERE id = $1`
+    const queryString = `DELETE FROM movies WHERE id = $1;`
     const queryConfig : QueryConfig = {
         text : queryString,
         values : [req.params.id]
     }
+    await client.query(queryConfig)
+    return res.status(204).json({message:"Movie deleted"})
+}
+
+export const updateMovieFromId = async (req : Request , res : Response) => {
+    let objectData : IMovieUpdate = {}
+    Object.entries(req.body).forEach(([key,value]) => {
+        if(key === "name" || key === "category"){
+            if(typeof value === "string"){
+                objectData[key] = value    
+            }
+        }
+        if( key === "duration" || key === "price"){
+            if(typeof value === "number"){
+                objectData[key] = value
+            }
+        }
+    })
+    const queryConfig = format(`
+        UPDATE movies SET (%I) = ROW (%L) WHERE id = %L RETURNING *;
+    `, Object.keys(objectData), Object.values(objectData), req.params.id);
+    const query = await client.query(queryConfig);
+    return res.status(200).json(query.rows[0])
 }
