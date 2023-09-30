@@ -31,6 +31,9 @@ export const createBodyValid = (
   }
   next();
 };
+export const movieNameValid = async (req : Request , res : Response, next : NextFunction) => {
+  
+}
 
 export const movieIdValid = async (req : Request , res : Response, next : NextFunction) => {
     const queryString = `SELECT * FROM movies WHERE id = $1;`
@@ -40,7 +43,7 @@ export const movieIdValid = async (req : Request , res : Response, next : NextFu
     }
     const query = await client.query(queryConfig)
     if(query.rowCount === 0){
-        return res.status(404).json({message : "Movie not found"})
+        return res.status(404).json({message : "Movie not found!"})
     }
     res.locals.movie = query.rows[0]
 
