@@ -32,8 +32,20 @@ export const createBodyValid = (
   next();
 };
 export const movieNameValid = async (req : Request , res : Response, next : NextFunction) => {
-  
+  const { name } = req.body;
+
+  const queryString = `SELECT * FROM movies WHERE name = $1;`;
+  const queryConfig: QueryConfig = {
+    text: queryString,
+    values: [name]
+  };
+  const query = await client.query(queryConfig)
+  if(query.rowCount > 0){
+    return res.status(409).json({message: "Movie name already exists!"})
+  }
+  next()
 }
+
 
 export const movieIdValid = async (req : Request , res : Response, next : NextFunction) => {
     const queryString = `SELECT * FROM movies WHERE id = $1;`

@@ -5,11 +5,22 @@ import { client } from "./database";
 import { IMovieUpdate } from "./interfaces";
 
 export const getMovies = async (req : Request , res : Response) => {
-    const queryString = `SELECT * FROM movies;`
-
-    const query = await client.query(queryString)
-
-    res.status(200).json(query.rows)
+    if(req.query.category){
+        const queryString = format(`SELECT * FROM movies WHERE category ILIKE '%s';`, req.query.category);
+        const query = await client.query(queryString)
+        if(query.rows.length > 0){
+            res.status(200).json(query.rows);
+        }else{
+            const queryString = `SELECT * FROM movies;`;
+            const query = await client.query(queryString);
+            res.status(200).json(query.rows);
+        }
+        
+    } else {
+        const queryString = `SELECT * FROM movies;`;
+        const query = await client.query(queryString);
+        res.status(200).json(query.rows);
+    }
 }
 
 export const getMovieFromId = async (req : Request , res : Response) => {
@@ -18,12 +29,12 @@ export const getMovieFromId = async (req : Request , res : Response) => {
 
 }
 
+
 export const createMovie = async (req : Request , res : Response) => {
     const queryString = `INSERT INTO movies (name, category, duration, price)
         VALUES ($1, $2 , $3 , $4)
         RETURNING *;`
     
-
     const queryConfig : QueryConfig = {
         text : queryString,
         values : [req.body.name, req.body.category, req.body.duration , req.body.price]
