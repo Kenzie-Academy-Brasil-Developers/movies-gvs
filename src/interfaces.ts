@@ -11,3 +11,13 @@ export interface IMovieUpdate{
     duration?: number;
     price?: number
 }
+export interface IField{
+    key: string;
+    required?: boolean;
+    min?: number;
+    max?: number;
+    regex?: {
+        expression: RegExp,
+        message: string;
+    }
+}
